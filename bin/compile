@@ -55,7 +55,8 @@ if [ -f "$bsdir.platform.downloaded" ]; then
 else
   loginfo "downloading Haskell Platform $platformver from $platformurl";
   downloadAndExtract $bsdir $platformurl && \
-    touch $bsdir.platform.downloaded;
+    touch $bsdir.platform.downloaded || \
+    exit 1
 fi
 # Haskell Platform source is downloaded
 
@@ -65,7 +66,8 @@ else
   platformdir="$bsdir/haskell-platform-$platformver"
   platformprefix="$BUILD_DIR/bootstrap/haskell-platform-$platformver"
   configureMakeInstall $platformdir $platformprefix && \
-    touch $bsdir.platform.compiled;
+    touch $bsdir.platform.compiled || \
+    exit 2
 fi
 # Haskell platform is compiled is compiled
 export PATH="$platformprefix/bin:$PATH"
