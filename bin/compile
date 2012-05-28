@@ -41,14 +41,27 @@ if [ -f "$bsdir.ghc.compiled" ]; then
 else
   ghcdir="$bsdir/ghc-$ghcver"
   ghcprefix="$BUILD_DIR/bootstrap/ghc-$ghcver"
-  configureMakeInstall --no-make $ghcdir $ghcprefix && \
+  [[ ! -d $ghcprefix ]] && mkdir -p $ghcprefix
+  pushd $ghcdir
+  ./configure --prefix=$ghcprefix && make install && \
     touch $bsdir.ghc.compiled;
+  popd
 fi
 # GHC is compiled
 
 export PATH="$ghcprefix/bin:$PATH"
 export LIBRARY_PATH="$LIBRARY_PATH:$ghcprefix/lib"
 export C_INCLUDE_PATH="$C_INCLUDE_PATH:$ghcprefix/include"
+
+if [ -f "$bsdir.gmp.downloaded" ]; then
+  loginfo "already downloaded libgmp3-dev";
+else
+  loginfo "downloading libgmp3-dev";
+  curl -o $bsdir/libgmp3-dev.deb http://mirror.pnl.gov/ubuntu//pool/main/g/gmp/libgmp3-dev_4.3.2+dfsg-1ubuntu1_amd64.deb
+  dpkg -x $bsdir/libgmp3-dev.deb $bsdir/native && \
+    touch $bsdir.gmp.downloaded
+fi
+
 
 if [ -f "$bsdir.platform.downloaded" ]; then
   loginfo "already downloaded Haskell Platform bootstrap version ${platformver}";
@@ -65,9 +78,12 @@ if [ -f "$bsdir.platform.compiled" ]; then
 else
   platformdir="$bsdir/haskell-platform-$platformver"
   platformprefix="$BUILD_DIR/bootstrap/haskell-platform-$platformver"
-  configureMakeInstall $platformdir $platformprefix && \
+  pushd $platformdir
+  [[ ! -d $platformprefix ]] && mkdir -p $platformprefix
+  ./configure --prefix=$platformprefix --with-ghc="ghc -L$bsdir/native/lib" && make && make install && \
     touch $bsdir.platform.compiled || \
     exit 2
+  popd
 fi
 # Haskell platform is compiled is compiled
 export PATH="$platformprefix/bin:$PATH"
