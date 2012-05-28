@@ -33,10 +33,16 @@ function downloadAndExtract() {
 }
 
 function configureMakeInstall() {
+  if [ "$1" == "--no-make" ]; then
+    makeCmd="echo Skipping make"
+    shift
+  else
+    makeCmd=make
+  fi
   pushd $1;
   # create build directory
   [[ ! -d $2 ]] && mkdir -p $2
-  cmd="./configure --prefix=$2 && make && make install"
+  cmd="./configure --prefix=$2 && $makeCmd && make install"
   echo -n "Info: [MAKE] $cmd";
   eval $cmd
   echo "[OK]";

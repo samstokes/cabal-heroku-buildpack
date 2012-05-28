@@ -41,7 +41,7 @@ if [ -f "$bsdir.ghc.compiled" ]; then
 else
   ghcdir="$bsdir/ghc-$ghcver"
   ghcprefix="$BUILD_DIR/bootstrap/ghc-$ghcver"
-  configureMakeInstall $ghcdir $ghcprefix && \
+  configureMakeInstall --no-make $ghcdir $ghcprefix && \
     touch $bsdir.ghc.compiled;
 fi
 # GHC is compiled
