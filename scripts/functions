@@ -1,3 +1,13 @@
+#!/bin/bash
+
+loginfo() { echo "Info: $*"; }
+error() { echo "Error: $*" >&2; exit 1; }
+
+setIfUnset() {
+    varname="$1"
+    defaultValue="$2"
+    eval "if [ \"\$$varname\" = \"\" ]; then $varname=$defaultValue; loginfo \"$varname unset; use \$$varname\"; fi"
+}
 
 function indent() {
   c='s/^/       /'
@@ -12,13 +22,23 @@ function clearEnvironment() {
 }
 
 function downloadAndExtract() {
-  mkdir -p $1 && curl $2 -o - | tar jxf - -C $1
+  case $2 in
+  *.tar)     options=xf ;;
+  *.tar.gz)  options=xzf ;;
+  *.tar.bz2) options=xjf;;
+  *) error "Unknow format for $2; should be tar, tar.gz or tar.bz2" ;;
+  esac
+
+  mkdir -p $1 && curl $2 -o - | tar $options - -C $1
 }
 
 function configureMakeInstall() {
   pushd $1;
-  echo -n "Info: ./configure --prefix=$2 && make && make install";
-  ./configure --prefix=$2 && make && make install;
+  # create build directory
+  [[ ! -d $2 ]] && mkdir -p $2
+  cmd="./configure --prefix=$2 && make && make install"
+  echo -n "Info: [MAKE] $cmd";
+  eval $cmd
   echo "[OK]";
   popd;
 }
@@ -28,4 +48,5 @@ function mkCompilerDir() {
   [[ ! -d "$compilerDir" ]]; mkdir -p $compilerDir;
   echo $compilerDir;
 }
+
 

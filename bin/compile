@@ -6,37 +6,66 @@ set -e -x
 source $(dirname $0)/../scripts/functions
 
 BUILD_DIR=$1
-echo "Info: BUILD_DIR=$BUILD_DIR"
+loginfo "BUILD_DIR=$BUILD_DIR"
 CACHE_DIR=$2
-echo "Info: CACHE_DIR=$CACHE_DIR"
+loginfo "CACHE_DIR=$CACHE_DIR"
+
 
 ## CHECK BUILDPACK_GHC_BASE_URL is set
-if [ "$BUILDPACK_GHC_BASE_URL" != "" ]; then
-  arch=$(uname -m)
-  ghcver=$GHC_BOOTSTRAP_VERSION
-  if [ "$ghcver" == "" ]; then
-    echo "Error: please set GHC_BOOTSTRAP_VERSION";
-    exit 1;
-  fi;
-  bsdir=$CACHE_DIR/bootstrap
-  ghcurl="$BUILDPACK_GHC_BASE_URL/$ghcver/ghc-$ghcver-$arch-unknown-linux.tar.bz2"
-  echo "Info: bootstrap directory: ${bsdir}";
-  echo "Info: bootstrap URL: $ghcurl";
-  if [ -f "$bsdir.downloaded" ]; then
-    echo "Info: already downloaded GHC bootstrap version ${ghcver}";
-  else
-    echo "Info: downloading GHC $ghcver form $ghcurl";
-    $(downloadAndExtract $bsdir $ghcurl);
-    touch $bsdir.downloaded;
-  fi;
+setIfUnset BUILDPACK_GHC_BASE_URL "http://www.haskell.org/ghc/dist"
+setIfUnset GHC_BOOTSTRAP_VERSION "7.0.4"
+setIfUnset HASKELL_PLATFORM_BASE_URL "http://lambda.haskell.org/platform/download"
+setIfUnset HASKELL_PLATFORM_VERSION "2011.4.0.0"
 
-  if [ -f "$bsdir.compiled" ]; then
-    echo "Info: already compiled GHC bootstrap version ${ghcver}";
-  else
-    $(configureMakeInstall $bsdir/ghc-$ghcver $BUILD_DIR/bootstrap/ghc-$ghcver);
-    touch $bsdir.compiled;
-  fi;
+arch=$(uname -m)
+ghcver=$GHC_BOOTSTRAP_VERSION
+bsdir=$CACHE_DIR/bootstrap
+ghcurl="$BUILDPACK_GHC_BASE_URL/$ghcver/ghc-$ghcver-$arch-unknown-linux.tar.bz2"
+platformver="$HASKELL_PLATFORM_VERSION"
+platformurl="$HASKELL_PLATFORM_BASE_URL/$platformver/haskell-platform-$platformver.tar.gz"
+
+loginfo "bootstrap directory: ${bsdir}";
+loginfo "bootstrap URL: $ghcurl";
+
+if [ -f "$bsdir.ghc.downloaded" ]; then
+  loginfo "already downloaded GHC bootstrap version ${ghcver}";
 else
-  echo "Error: please set BUILDPACK_GHC_BASE_URL";
-  exit 1;
+  loginfo "downloading GHC $ghcver from $ghcurl";
+  $(downloadAndExtract $bsdir $ghcurl) && \
+    touch $bsdir.ghc.downloaded;
 fi
+# GHC source is downloaded
+
+if [ -f "$bsdir.ghc.compiled" ]; then
+  loginfo "already compiled GHC bootstrap version ${ghcver}";
+else
+  ghcdir="$bsdir/ghc-$ghcver"
+  ghcprefix="$BUILD_DIR/bootstrap/ghc-$ghcver"
+  $(configureMakeInstall $ghcdir $ghcprefix) && \
+    touch $bsdir.ghc.compiled;
+fi
+# GHC is compiled
+
+export PATH="$ghcprefix/bin:$PATH"
+export LIBRARY_PATH="$LIBRARY_PATH:$ghcprefix/lib"
+export C_INCLUDE_PATH="$C_INCLUDE_PATH:$ghcprefix/include"
+
+if [ -f "$bsdir.platform.downloaded" ]; then
+  loginfo "already downloaded GHC bootstrap version ${platformver}";
+else
+  loginfo "downloading Haskell Platform $platformver from $platformurl";
+  $(downloadAndExtract $bsdir $platformurl) && \
+    touch $bsdir.platform.downloaded;
+fi
+# Haskell Platform source is downloaded
+
+if [ -f "$bsdir.platform.compiled" ]; then
+  loginfo "already compiled GHC bootstrap version ${platformver}";
+else
+  platformdir="$bsdir/haskell-platform-$platformver"
+  platformprefix="$BUILD_DIR/bootstrap/haskell-platform-$platformver"
+  $(configureMakeInstall $platformdir $platformprefix) && \
+    touch $bsdir.platform.compiled;
+fi
+# Haskell platform is compiled is compiled
+export PATH="$platformprefix/bin:$PATH"
