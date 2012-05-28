@@ -51,7 +51,7 @@ export LIBRARY_PATH="$LIBRARY_PATH:$ghcprefix/lib"
 export C_INCLUDE_PATH="$C_INCLUDE_PATH:$ghcprefix/include"
 
 if [ -f "$bsdir.platform.downloaded" ]; then
-  loginfo "already downloaded GHC bootstrap version ${platformver}";
+  loginfo "already downloaded Haskell Platform bootstrap version ${platformver}";
 else
   loginfo "downloading Haskell Platform $platformver from $platformurl";
   downloadAndExtract $bsdir $platformurl && \
@@ -60,7 +60,7 @@ fi
 # Haskell Platform source is downloaded
 
 if [ -f "$bsdir.platform.compiled" ]; then
-  loginfo "already compiled GHC bootstrap version ${platformver}";
+  loginfo "already compiled Haskell Platform bootstrap version ${platformver}";
 else
   platformdir="$bsdir/haskell-platform-$platformver"
   platformprefix="$BUILD_DIR/bootstrap/haskell-platform-$platformver"
