@@ -80,7 +80,7 @@ else
   platformprefix="$BUILD_DIR/bootstrap/haskell-platform-$platformver"
   pushd $platformdir
   [[ ! -d $platformprefix ]] && mkdir -p $platformprefix
-  ./configure --prefix=$platformprefix --with-ghc="ghc -L$bsdir/native/lib" && make && make install && \
+  ./configure --prefix=$platformprefix --with-ghc="ghc -L$bsdir/native/usr/lib" && make && make install && \
     touch $bsdir.platform.compiled || \
     exit 2
   popd
