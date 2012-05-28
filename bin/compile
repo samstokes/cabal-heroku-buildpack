@@ -53,13 +53,17 @@ export PATH="$ghcprefix/bin:$PATH"
 export LIBRARY_PATH="$LIBRARY_PATH:$ghcprefix/lib"
 export C_INCLUDE_PATH="$C_INCLUDE_PATH:$ghcprefix/include"
 
-if [ -f "$bsdir.gmp.downloaded" ]; then
-  loginfo "already downloaded libgmp3-dev";
+nativedir=$bsdir/native
+
+if [ -f "$bsdir.native.downloaded" ]; then
+  loginfo "already downloaded native libs";
 else
-  loginfo "downloading libgmp3-dev";
-  curl -o $bsdir/libgmp3-dev.deb http://mirror.pnl.gov/ubuntu//pool/main/g/gmp/libgmp3-dev_4.3.2+dfsg-1ubuntu1_amd64.deb
-  dpkg -x $bsdir/libgmp3-dev.deb $bsdir/native && \
-    touch $bsdir.gmp.downloaded
+  loginfo "downloading native libs";
+  getDeb $nativedir http://mirror.pnl.gov/ubuntu//pool/main/g/gmp/libgmp3-dev_4.3.2+dfsg-1ubuntu1_amd64.deb
+  getDeb $nativedir http://mirror.pnl.gov/ubuntu//pool/main/m/mesa/mesa-common-dev_7.7.1-1ubuntu2_amd64.deb
+  getDeb $nativedir http://mirror.pnl.gov/ubuntu//pool/main/m/mesa/libglu1-mesa-dev_7.7.1-1ubuntu2_amd64.deb
+  getDeb $nativedir http://mirror.pnl.gov/ubuntu//pool/main/f/freeglut/freeglut3-dev_2.6.0-0ubuntu2_amd64.deb
+  touch $bsdir.native.downloaded
 fi
 
 
@@ -80,7 +84,7 @@ else
   platformprefix="$BUILD_DIR/bootstrap/haskell-platform-$platformver"
   pushd $platformdir
   [[ ! -d $platformprefix ]] && mkdir -p $platformprefix
-  ./configure --prefix=$platformprefix --with-ghc="ghc -L$bsdir/native/usr/lib" && make && make install && \
+  ./configure --prefix=$platformprefix --with-ghc="ghc -L$nativedir/usr/lib -I$nativedir/usr/include" LDFLAGS=-L$nativedir/usr/lib CPPFLAGS=-I$nativedir/usr/include && make && make install && \
     touch $bsdir.platform.compiled || \
     exit 2
   popd

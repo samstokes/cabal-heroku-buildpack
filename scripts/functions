@@ -32,6 +32,10 @@ function downloadAndExtract() {
   mkdir -p $1 && curl $2 -o - | tar $options - -C $1
 }
 
+function getDeb() {
+  curl $2 -o /tmp/deb.deb && dpkg -x /tmp/deb.deb $1 && rm -f /tmp/deb.deb
+}
+
 function configureMakeInstall() {
   if [ "$1" == "--no-make" ]; then
     makeCmd="echo Skipping make"
