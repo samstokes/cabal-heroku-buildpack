@@ -31,7 +31,7 @@ if [ -f "$bsdir.ghc.downloaded" ]; then
   loginfo "already downloaded GHC bootstrap version ${ghcver}";
 else
   loginfo "downloading GHC $ghcver from $ghcurl";
-  $(downloadAndExtract $bsdir $ghcurl) && \
+  downloadAndExtract $bsdir $ghcurl && \
     touch $bsdir.ghc.downloaded;
 fi
 # GHC source is downloaded
@@ -41,7 +41,7 @@ if [ -f "$bsdir.ghc.compiled" ]; then
 else
   ghcdir="$bsdir/ghc-$ghcver"
   ghcprefix="$BUILD_DIR/bootstrap/ghc-$ghcver"
-  $(configureMakeInstall $ghcdir $ghcprefix) && \
+  configureMakeInstall $ghcdir $ghcprefix && \
     touch $bsdir.ghc.compiled;
 fi
 # GHC is compiled
@@ -54,7 +54,7 @@ if [ -f "$bsdir.platform.downloaded" ]; then
   loginfo "already downloaded GHC bootstrap version ${platformver}";
 else
   loginfo "downloading Haskell Platform $platformver from $platformurl";
-  $(downloadAndExtract $bsdir $platformurl) && \
+  downloadAndExtract $bsdir $platformurl && \
     touch $bsdir.platform.downloaded;
 fi
 # Haskell Platform source is downloaded
@@ -64,7 +64,7 @@ if [ -f "$bsdir.platform.compiled" ]; then
 else
   platformdir="$bsdir/haskell-platform-$platformver"
   platformprefix="$BUILD_DIR/bootstrap/haskell-platform-$platformver"
-  $(configureMakeInstall $platformdir $platformprefix) && \
+  configureMakeInstall $platformdir $platformprefix && \
     touch $bsdir.platform.compiled;
 fi
 # Haskell platform is compiled is compiled
