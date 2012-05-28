@@ -44,9 +44,14 @@ function configureMakeInstall() {
   [[ ! -d $2 ]] && mkdir -p $2
   cmd="./configure --prefix=$2 && $makeCmd && make install"
   echo -n "Info: [MAKE] $cmd";
-  eval $cmd
-  echo "[OK]";
+  eval $cmd; ret=$?
+  if [ $ret == 0 ]; then
+    echo "[OK]";
+  else
+    echo "[ERROR]";
+  fi
   popd;
+  return $ret
 }
 
 function mkCompilerDir() {
